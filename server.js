@@ -1,5 +1,6 @@
-import express from 'express';
+import express, { application, json } from 'express';
 const app = express();
+app.use(express.json())
 const expressPort = 3000;
 
 let tasks = [
@@ -20,6 +21,7 @@ let tasks = [
     },
 
 ]
+let tasksId=3
 
 app.get('/', (req, res) => {
   res.json({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
@@ -43,6 +45,27 @@ app.get('/tasks/:id',(req,res)=>{
     }
     res.status(status)
     res.json(json)
+})
+
+app.post("/tasks",(req,res)=>{
+    try{
+        if (req.body?.title){
+        let newTask = {
+            id : ++tasksId,
+            title : reqJson.title,
+            done : false,
+        }
+        tasks.push(newTask)   
+        res.status(201)
+        res.json(JSON.stringify(newTask))
+
+        }else{
+            res.sendStatus(400)
+        }
+    }catch(err){
+        console.log(err)
+    }
+    res.sendStatus(400)
 })
 
 app.get('/health', (req,res)=>{
