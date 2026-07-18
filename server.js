@@ -1,8 +1,12 @@
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger.json" with { type: "json" };
+
 const app = express();
 app.use(express.json());
 const expressPort = 3000;
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 let tasks = [
   {
     id: 1,
@@ -22,6 +26,7 @@ let tasks = [
 ];
 let tasksId = 3;
 
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   return res.json({ name: "Task API", version: "1.0", endpoints: ["/tasks"] });
 });
