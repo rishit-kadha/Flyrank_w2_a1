@@ -16,36 +16,48 @@ A simple RESTful Task API built with **Express.js**. It supports creating, readi
 
 - Node.js
 - Express.js
-- SQLite via better-sqlite3
+- PostgreSQL
+- Docker Compose
 - Swagger UI
 - OpenAPI 3.0
 
 ---
 
-## SQLite Database
+## PostgreSQL Database
 
-SQLite was chosen because this API needs durable task storage without requiring a separate database server. The database is a single portable file that is easy to inspect, back up, and use locally.
+PostgreSQL provides durable relational storage in a container, with a named Docker volume keeping data separate from the application container. The connection string is read from `DATABASE_URL` in `.env`; copy `.env.example` to `.env` before starting the stack.
 
-The database file is stored at the project root as `tasks.db`. When the application starts, it creates the `tasks` table if needed and inserts the example tasks only when the table is empty.
+The schema and seed data live in `sql/schema.sql`. The Postgres repository executes this file when the app starts, creating the table and inserting the example tasks only when the table is empty.
+
+The service and route behavior remain unchanged: only the storage implementation changed from the previous SQLite store to `PostgresTaskRepository`. `TaskService` keeps the route layer independent of SQL details.
 
 ### Start the project
 
 ```bash
+cp .env.example .env
 npm install
-npm start
+docker compose up --build
 ```
 
 The API is available at `http://localhost:3000`, and the Swagger UI is available at `http://localhost:3000/docs`.
 
-### Example SQL query
+Stop the stack without deleting the database volume:
 
-This query lists only completed tasks:
-
-```sql
-SELECT * FROM tasks WHERE done = 1;
+```bash
+docker compose down
 ```
 
-![SQLite database viewer showing the tasks table and a completed-task query](images/database-viewer.svg)
+### Persistence proof
+
+Verified on September 10, 2026: I created `Docker persistence proof` with `POST /tasks`, ran `docker compose down`, started the stack again with `docker compose up --build`, and called `GET /tasks`. The task was still present, and `psql` showed the same row directly in Postgres. The `postgres_data` volume survives container recreation.
+
+### Example SQL query
+
+Run a query inside the database container:
+
+```bash
+docker compose exec db psql -U taskuser -d taskdb -c "SELECT * FROM tasks WHERE done = TRUE;"
+```
 
 ---
 
@@ -161,8 +173,15 @@ http://localhost:3000/docs
 .
 ├── swagger.json
 ├── server.js
-├── tasks.db
-├── images/
+├── repositories/
+│   └── postgresTaskRepository.js
+├── services/
+│   └── taskService.js
+├── sql/
+│   └── schema.sql
+├── Dockerfile
+├── docker-compose.yml
+├── .env.example
 ├── package.json
 └── README.md
 ```
