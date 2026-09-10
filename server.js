@@ -1,30 +1,45 @@
 import express from "express";
+import Database from "better-sqlite3";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.json" with { type: "json" };
 
 const app = express();
 app.use(express.json());
 const expressPort = 3000;
+const db = new Database("tasks.db");
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY,
+    title TEXT,
+    done BOOLEAN
+  )
+`);
+
+const seedTasks = [
+  ["Wake up at 6am", true],
+  ["Brush my Teeth", true],
+  ["Code for 2 hours", false],
+];
+
+if (db.prepare("SELECT COUNT(*) FROM tasks").pluck().get() === 0) {
+  const insertTask = db.prepare(
+    "INSERT INTO tasks (title, done) VALUES (?, ?)",
+  );
+  const seed = db.transaction(() => {
+    for (const [title, done] of seedTasks) {
+      insertTask.run(title, done ? 1 : 0);
+    }
+  });
+  seed();
+}
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-let tasks = [
-  {
-    id: 1,
-    title: "Wake up at 6am",
-    done: true,
-  },
-  {
-    id: 2,
-    title: "Brush my Teeth",
-    done: true,
-  },
-  {
-    id: 3,
-    title: "Code for 2 hours",
-    done: false,
-  },
-];
-let tasksId = 3;
+
+const taskFromRow = (task) => ({
+  ...task,
+  done: Boolean(task.done),
+});
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
@@ -32,73 +47,81 @@ app.get("/", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
-  return res.json(tasks);
+  const tasks = db
+    .prepare("SELECT id, title, done FROM tasks ORDER BY id")
+    .all();
+  return res.json(tasks.map(taskFromRow));
 });
 
 app.get("/tasks/:id", (req, res) => {
-  for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === Number(req.params.id)) {
-      return res.status(200).json(tasks[i]);
-    }
+  const task = db
+    .prepare("SELECT id, title, done FROM tasks WHERE id = ?")
+    .get(Number(req.params.id));
+  if (task) {
+    return res.status(200).json(taskFromRow(task));
   }
   return res.status(404).json({ error: `Task ${req.params.id} not found` });
 });
 
 app.post("/tasks", (req, res) => {
   if (typeof req.body.title === "string") {
-    let newTask = {
-      id: ++tasksId,
-      title: req.body.title,
-      done: false,
-    };
-    tasks.push(newTask);
-    return res.status(201).json(newTask);
+    const result = db
+      .prepare("INSERT INTO tasks (title, done) VALUES (?, ?)")
+      .run(req.body.title, 0);
+    const newTask = db
+      .prepare("SELECT id, title, done FROM tasks WHERE id = ?")
+      .get(result.lastInsertRowid);
+    return res.status(201).json(taskFromRow(newTask));
   } else {
     return res.sendStatus(400);
   }
 });
 
 app.put("/tasks/:id", (req, res) => {
-  for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === Number(req.params.id)) {
-      let hasTitle = false;
-      let hasDone = false;
-      if (req.body.title !== undefined) {
-        if (typeof req.body.title === "string") {
-          hasTitle = true;
-        } else {
-          return res.sendStatus(400);
-        }
-      }
-      if (req.body.done !== undefined) {
-        if (typeof req.body.done === "boolean") {
-          hasDone = true;
-        } else {
-          return res.sendStatus(400);
-        }
-      }
-      if (hasDone && hasTitle) {
-        tasks[i].title = req.body.title;
-        tasks[i].done = req.body.done;
-      } else if (hasDone) {
-        tasks[i].done = req.body.done;
-      } else if (hasTitle) {
-        tasks[i].title = req.body.title;
-      } else {
-        return res.sendStatus(400);
-      }
-      return res.status(200).json(tasks[i]);
-    }
+  const taskId = Number(req.params.id);
+  const existingTask = db
+    .prepare("SELECT id FROM tasks WHERE id = ?")
+    .get(taskId);
+  if (!existingTask) {
+    return res.status(404).json({ error: `Task ${req.params.id} not found` });
   }
-  return res.status(404).json({ error: `Task ${req.params.id} not found` });
+
+  const updates = [];
+  const values = [];
+  if (req.body.title !== undefined) {
+    if (typeof req.body.title !== "string") {
+      return res.sendStatus(400);
+    }
+    updates.push("title = ?");
+    values.push(req.body.title);
+  }
+  if (req.body.done !== undefined) {
+    if (typeof req.body.done !== "boolean") {
+      return res.sendStatus(400);
+    }
+    updates.push("done = ?");
+    values.push(req.body.done ? 1 : 0);
+  }
+  if (updates.length === 0) {
+    return res.sendStatus(400);
+  }
+
+  values.push(taskId);
+  db.prepare(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`).run(
+    ...values,
+  );
+  const updatedTask = db
+    .prepare("SELECT id, title, done FROM tasks WHERE id = ?")
+    .get(taskId);
+  return res.status(200).json(taskFromRow(updatedTask));
 });
 
 app.delete("/tasks/:id", (req, res) => {
-  for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === Number(req.params.id)) {
-      tasks.splice(i, 1);
-      return res.status(204).send("");
-    }
+  const result = db
+    .prepare("DELETE FROM tasks WHERE id = ?")
+    .run(Number(req.params.id));
+  if (result.changes > 0) {
+    return res.status(204).send("");
   }
   return res.status(404).json({ error: `Task ${req.params.id} not found` });
 });
