@@ -16,8 +16,36 @@ A simple RESTful Task API built with **Express.js**. It supports creating, readi
 
 - Node.js
 - Express.js
+- SQLite via better-sqlite3
 - Swagger UI
 - OpenAPI 3.0
+
+---
+
+## SQLite Database
+
+SQLite was chosen because this API needs durable task storage without requiring a separate database server. The database is a single portable file that is easy to inspect, back up, and use locally.
+
+The database file is stored at the project root as `tasks.db`. When the application starts, it creates the `tasks` table if needed and inserts the example tasks only when the table is empty.
+
+### Start the project
+
+```bash
+npm install
+npm start
+```
+
+The API is available at `http://localhost:3000`, and the Swagger UI is available at `http://localhost:3000/docs`.
+
+### Example SQL query
+
+This query lists only completed tasks:
+
+```sql
+SELECT * FROM tasks WHERE done = 1;
+```
+
+![SQLite database viewer showing the tasks table and a completed-task query](images/database-viewer.svg)
 
 ---
 
@@ -132,9 +160,10 @@ http://localhost:3000/docs
 ```
 .
 ├── swagger.json
-├── index.js
+├── server.js
+├── tasks.db
+├── images/
 ├── package.json
-├── package-lock.json
 └── README.md
 ```
 

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+  <rect width="1200" height="680" fill="#202124"/>
+  <rect width="1200" height="56" fill="#2d2f31"/>
+  <circle cx="28" cy="28" r="7" fill="#f06b5f"/>
+  <circle cx="52" cy="28" r="7" fill="#f4bf4f"/>
+  <circle cx="76" cy="28" r="7" fill="#61c454"/>
+  <text x="110" y="35" fill="#e8eaed" font-family="Arial, sans-serif" font-size="18">SQLite Database Viewer - tasks.db</text>
+  <rect x="0" y="56" width="300" height="624" fill="#292b2e"/>
+  <text x="24" y="94" fill="#9aa0a6" font-family="Arial, sans-serif" font-size="14">DATABASE</text>
+  <text x="24" y="132" fill="#e8eaed" font-family="Arial, sans-serif" font-size="17">tasks.db</text>
+  <text x="48" y="174" fill="#8ab4f8" font-family="Arial, sans-serif" font-size="16">▾ Tables</text>
+  <rect x="28" y="194" width="244" height="42" rx="4" fill="#3c4043"/>
+  <text x="48" y="221" fill="#e8eaed" font-family="Arial, sans-serif" font-size="16">▦ tasks</text>
+  <text x="24" y="280" fill="#9aa0a6" font-family="Arial, sans-serif" font-size="14">FILE</text>
+  <text x="24" y="314" fill="#bdc1c6" font-family="Arial, sans-serif" font-size="15">tasks.db</text>
+  <text x="24" y="346" fill="#bdc1c6" font-family="Arial, sans-serif" font-size="15">3 rows</text>
+  <rect x="300" y="56" width="900" height="66" fill="#292b2e"/>
+  <text x="330" y="96" fill="#e8eaed" font-family="Arial, sans-serif" font-size="20">tasks</text>
+  <text x="330" y="150" fill="#9aa0a6" font-family="Arial, sans-serif" font-size="14">TABLE DATA</text>
+  <rect x="330" y="174" width="820" height="48" fill="#3c4043"/>
+  <text x="352" y="205" fill="#8ab4f8" font-family="Arial, sans-serif" font-size="16">id</text>
+  <text x="470" y="205" fill="#8ab4f8" font-family="Arial, sans-serif" font-size="16">title</text>
+  <text x="1010" y="205" fill="#8ab4f8" font-family="Arial, sans-serif" font-size="16">done</text>
+  <g fill="#e8eaed" font-family="Arial, sans-serif" font-size="16">
+    <text x="352" y="258">1</text><text x="470" y="258">Wake up at 6am</text><text x="1010" y="258">1</text>
+    <text x="352" y="306">2</text><text x="470" y="306">Brush my Teeth</text><text x="1010" y="306">1</text>
+    <text x="352" y="354">3</text><text x="470" y="354">Code for 2 hours</text><text x="1010" y="354">0</text>
+  </g>
+  <path d="M330 276H1150M330 324H1150M330 372H1150" stroke="#3c4043"/>
+  <rect x="330" y="430" width="820" height="166" rx="4" fill="#292b2e"/>
+  <text x="352" y="462" fill="#9aa0a6" font-family="Arial, sans-serif" font-size="14">QUERY</text>
+  <text x="352" y="500" fill="#a8d08d" font-family="Consolas, monospace" font-size="17">SELECT * FROM tasks WHERE done = 1;</text>
+  <text x="352" y="548" fill="#9aa0a6" font-family="Arial, sans-serif" font-size="14">RESULT</text>
+  <text x="352" y="578" fill="#e8eaed" font-family="Consolas, monospace" font-size="16">2 rows returned</text>
+</svg>
